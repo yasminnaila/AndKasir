@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  db:
+    image: mysql:5.7
+    container_name: andkasir_db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: kasirdb
+      MYSQL_USER: kasir
+      MYSQL_PASSWORD: kasirpass
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./db:/docker-entrypoint-initdb.d # put kasir.sql here to auto import
+    ports:
+      - "3306:3306"
+
+  app:
+    build: .
+    image: yasminnaila/andkasir:latest
+    container_name: andkasir_app
+    depends_on:
+      - db
+    volumes:
+      - ./config.properties:/opt/andkasir/config.properties:ro
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: kasirdb
+      DB_USER: kasir
+      DB_PASS: kasirpass
+    # If the app communicates via a port, map it here:
+    # ports:
+    #   - "8080:8080"
+    restart: unless-stopped
+
+volumes:
+  db_data:
